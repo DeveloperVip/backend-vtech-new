@@ -32,6 +32,29 @@ const upload = multer({
 });
 
 // POST /api/v1/upload  (cần đăng nhập admin)
+/**
+ * @swagger
+ * /upload:
+ *   post:
+ *     summary: Upload ảnh
+ *     tags: [Upload]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required: [file]
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Upload thành công
+ */
 router.post('/', authMiddleware, upload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).json({ success: false, message: 'Không có file' });
   const url = `${process.env.API_URL || 'http://localhost:5000'}/uploads/${req.file.filename}`;
@@ -39,6 +62,25 @@ router.post('/', authMiddleware, upload.single('file'), (req, res) => {
 });
 
 // DELETE /api/v1/upload/:filename  (cần đăng nhập admin)
+/**
+ * @swagger
+ * /upload/{filename}:
+ *   delete:
+ *     summary: Xóa file đã upload
+ *     tags: [Upload]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: filename
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: 1700000000-123456.png
+ *     responses:
+ *       200:
+ *         description: Xóa thành công
+ */
 router.delete('/:filename', authMiddleware, (req, res) => {
   const filePath = path.join(uploadDir, req.params.filename);
   if (fs.existsSync(filePath)) fs.unlinkSync(filePath);

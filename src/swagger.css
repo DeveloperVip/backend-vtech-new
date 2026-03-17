@@ -1,0 +1,25 @@
+  body {
+      background: linear-gradient(135deg, #020617, #0f172a);
+  }
+
+  .swagger-ui .topbar {
+      background: #020617;
+  }
+
+  .swagger-ui .info {
+      color: #f1f5f9;
+  }
+
+  .swagger-ui .scheme-container {
+      background: #020617;
+      border: 1px solid #1e293b;
+  }
+
+  .swagger-ui .opblock {
+      background: #020617;
+      border: 1px solid #1e293b;
+  }
+
+  .swagger-ui .opblock-summary {
+      color: #e2e8f0;
+  }

@@ -2,6 +2,7 @@ const slugify = require('slugify');
 const { Product, Category } = require('../models');
 const { AppError } = require('../middlewares/errorHandler');
 const { StatusCodes } = require('http-status-codes');
+const {generateUniqueSlug} = require('../utils/checkSlug')
 const { Op } = require('sequelize');
 
 const makeSlug = (name) =>
@@ -44,7 +45,7 @@ const getById = async (id) => {
 };
 
 const create = async (data) => {
-  if (!data.slug) data.slug = makeSlug(data.name);
+  if (!data.slug) data.slug = await generateUniqueSlug(data.name);
   return Product.create(data);
 };
 

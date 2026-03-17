@@ -1,5 +1,6 @@
 require('dotenv').config();
-
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swagger');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -21,7 +22,7 @@ app.use(helmet({
 }));
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
-const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:3000').split(',');
+const allowedOrigins = ((process.env.CLIENT_URL || 'http://localhost:3000') && 'http://localhost:5000').split(',');
 
 app.use(
   cors({
@@ -61,6 +62,13 @@ app.use(API_PREFIX, routes);
 // ─── Static files (uploads) ───────────────────────────────────────────────────
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+app.use('/api/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: '/swagger.css',
+  customSiteTitle: "Api vitech"
+}));
+app.get('/swagger.json', (req, res) => {
+  res.json(swaggerSpec);
+});
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {
   res.status(StatusCodes.NOT_FOUND).json({
