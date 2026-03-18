@@ -122,3 +122,28 @@ VALUES
  'Biến tần công nghiệp',
  'Điều khiển tốc độ động cơ',
  NOW(), NOW());
+
+
+
+-- ==datamock product== --
+INSERT INTO products
+(name, slug, description, content, price, priceType, thumbnail, categoryId, stock, isFeatured, isActive, createdAt, updatedAt)
+VALUES
+-- ===== Thiết bị giáo dục =====
+('Mô hình điện cơ đơn giản', 'mo-hinh-dien-co-don-gian', 'Mô hình thực hành điện cơ bản', 'Chi tiết sản phẩm mô hình điện cơ cho giáo dục kỹ thuật.', 1500000, 'fixed', 'https://example.com/images/product-dien-co.jpg', 10, 10, true, true, NOW(), NOW()),
+('Bộ cảm biến đa năng', 'bo-cam-bien-da-nang', 'Mô hình thực hành cảm biến', 'Bộ kit cảm biến cho học tập và nghiên cứu.', 2200000, 'fixed', 'https://example.com/images/product-cam-bien.jpg', 11, 15, false, true, NOW(), NOW()),
+
+-- ===== Thiết bị ô tô =====
+('Máy chẩn đoán OBD', 'may-chan-doan-obd', 'Thiết bị đọc lỗi và phân tích xe', 'Hỗ trợ đọc lỗi động cơ và phân tích hệ thống ô tô.', 3500000, 'fixed', 'https://example.com/images/product-chan-doan.jpg', 20, 8, false, true, NOW(), NOW()),
+('Camera hành trình xe hơi', 'camera-hanh-trinh-xe-hoi', 'Camera giám sát ô tô', 'Camera hành trình HD cho xe ô tô.', 1200000, 'fixed', 'https://example.com/images/product-camera.jpg', 21, 12, false, true, NOW(), NOW()),
+
+-- ===== Thiết bị thông minh =====
+('Bộ nhà thông minh Smart Home', 'bo-nha-thong-minh-smart-home', 'Thiết bị nhà thông minh', 'Hệ thống tự động hóa cho nhà ở và văn phòng.', 5000000, 'fixed', 'https://example.com/images/product-smart-home.jpg', 30, 5, false, true, NOW(), NOW()),
+('Thiết bị IoT tưới tiêu nông nghiệp', 'thiet-bi-iot-tuoi-tieu', 'IoT cho nông nghiệp', 'Giải pháp tưới tiêu thông minh, điều khiển từ xa.', 2800000, 'fixed', 'https://example.com/images/product-iot-farm.jpg', 31, 7, false, true, NOW(), NOW()),
+
+-- ===== Thiết bị công nghiệp =====
+('Bộ PLC và điều khiển', 'bo-plc-dieu-khien', 'Thiết bị PLC, tự động hóa', 'PLC công nghiệp cho hệ thống tự động hóa.', 8000000, 'fixed', 'https://example.com/images/product-plc.jpg', 40, 4, false, true, NOW(), NOW()),
+('Biến tần và động cơ', 'bien-tan-va-dong-co', 'Biến tần và motor công nghiệp', 'Điều khiển tốc độ động cơ, tiết kiệm năng lượng.', 6500000, 'fixed', 'https://example.com/images/product-bien-tan.jpg', 41, 6, false, true, NOW(), NOW());
+
+
+https://res.cloudinary.com/drmeotcu7/image/upload/v1773827764/uploads/pbxti31xig3xzkgxkua5.jpg

@@ -5,28 +5,37 @@ const Product = sequelize.define(
   'Product',
   {
     id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
+
     name: { type: DataTypes.STRING(255), allowNull: false },
     slug: { type: DataTypes.STRING(270), allowNull: false, unique: true },
-    description: { type: DataTypes.TEXT, allowNull: true },
-    content: { type: DataTypes.TEXT('long'), allowNull: true },
-    price: { type: DataTypes.DECIMAL(15, 0), allowNull: true },
+
+    description: DataTypes.TEXT,
+    content: DataTypes.TEXT('long'),
+
+    price: DataTypes.DECIMAL(15, 0),
     priceType: {
       type: DataTypes.ENUM('fixed', 'contact'),
       defaultValue: 'contact',
-      comment: 'fixed = giá cố định, contact = liên hệ',
     },
-    thumbnail: { type: DataTypes.STRING(500), allowNull: true },
-    images: {
-      type: DataTypes.JSON,
-      allowNull: true,
-      comment: 'Mảng URL ảnh',
-    },
-    categoryId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: true },
+
+    thumbnail: DataTypes.STRING(500),
+
+    categoryId: DataTypes.INTEGER.UNSIGNED,
+
+    stock: { type: DataTypes.INTEGER, defaultValue: 0 },
+    viewCount: { type: DataTypes.INTEGER, defaultValue: 0 },
+    soldCount: { type: DataTypes.INTEGER, defaultValue: 0 },
+    likeCount: { type: DataTypes.INTEGER, defaultValue: 0 },
+
+    ratingAvg: { type: DataTypes.FLOAT, defaultValue: 0 },
+    ratingCount: { type: DataTypes.INTEGER, defaultValue: 0 },
+
     isFeatured: { type: DataTypes.BOOLEAN, defaultValue: false },
     isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
     sortOrder: { type: DataTypes.INTEGER, defaultValue: 0 },
-    metaTitle: { type: DataTypes.STRING(255), allowNull: true },
-    metaDescription: { type: DataTypes.STRING(500), allowNull: true },
+
+    metaTitle: DataTypes.STRING(255),
+    metaDescription: DataTypes.STRING(500),
   },
   {
     tableName: 'products',
@@ -34,8 +43,9 @@ const Product = sequelize.define(
     indexes: [
       { fields: ['slug'] },
       { fields: ['categoryId'] },
-      { fields: ['isFeatured'] },
       { fields: ['isActive'] },
+      { fields: ['isFeatured'] },
+      { fields: ['price'] },
     ],
   },
 );

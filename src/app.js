@@ -22,7 +22,7 @@ app.use(helmet({
 }));
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
-const allowedOrigins = ((process.env.CLIENT_URL || 'http://localhost:3000') && 'http://localhost:5000').split(',');
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:3000').split(',');
 
 app.use(
   cors({
