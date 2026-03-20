@@ -29,6 +29,7 @@ AdminUser.hasMany(ChatRoom, { foreignKey: 'adminId', as: 'chatRooms' });
 // 🔹 Product - Image (1 - n)
 Product.hasMany(ProductImage, {
   foreignKey: 'productId',
+  as: 'images'
 });
 ProductImage.belongsTo(Product, {
   foreignKey: 'productId',

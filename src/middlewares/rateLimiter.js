@@ -3,7 +3,7 @@ const { StatusCodes } = require('http-status-codes');
 
 const apiLimiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10) || 15 * 60 * 1000, // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX, 10) || 100,
+  max: parseInt(process.env.RATE_LIMIT_MAX, 10) || 2000, // Increased to 2000 to support intensive search-as-you-type testing
   standardHeaders: true,
   legacyHeaders: false,
   message: {
