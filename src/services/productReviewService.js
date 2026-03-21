@@ -15,6 +15,9 @@ class ProductReviewService {
           model: ProductReviewImage,
           attributes: ['id', 'url', 'width', 'height'],
         },
+        // We handle user-specific liked status in frontend or a separate call
+        // but let's include the total likes if needed. 
+        // ProductReview model already has likeCount if we use counter cache.
       ],
       limit: parseInt(limit, 10),
       offset: parseInt(offset, 10),
@@ -82,6 +85,33 @@ class ProductReviewService {
     await this._updateProductRating(productId);
     
     return true;
+  }
+
+  async toggleLike(reviewId, userId, ipAddress) {
+    const { ProductReviewLike } = require('../models');
+    
+    // Find if already liked
+    let where = { reviewId };
+    if (userId) {
+      where.userId = userId;
+    } else {
+      where.ipAddress = ipAddress;
+      where.userId = null; // Important to check for guest likes specifically
+    }
+
+    const existingLike = await ProductReviewLike.findOne({ where });
+    const review = await ProductReview.findByPk(reviewId);
+    if (!review) throw new Error('Không tìm thấy đánh giá');
+
+    if (existingLike) {
+      await existingLike.destroy();
+      await review.decrement('likeCount', { by: 1 });
+      return { liked: false, likeCount: review.likeCount - 1 };
+    } else {
+      await ProductReviewLike.create({ reviewId, userId, ipAddress });
+      await review.increment('likeCount', { by: 1 });
+      return { liked: true, likeCount: review.likeCount + 1 };
+    }
   }
 
   // Helper cập nhật điểm trung bình

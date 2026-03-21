@@ -41,6 +41,19 @@ class ProductReviewController {
       res.status(400).json({ success: false, message: error.message });
     }
   };
+
+  toggleLike = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user?.id;
+      const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+      
+      const result = await productReviewService.toggleLike(id, userId, ipAddress);
+      res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  };
 }
 
 module.exports = new ProductReviewController();

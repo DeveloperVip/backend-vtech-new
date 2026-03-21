@@ -1,5 +1,5 @@
 const slugify = require('slugify');
-const { Product, Category, ProductImage } = require('../models');
+const { Product, Category, ProductImage, ProductAdditionalInfo } = require('../models');
 const { AppError } = require('../middlewares/errorHandler');
 const { StatusCodes } = require('http-status-codes');
 const {generateUniqueSlug} = require('../utils/checkSlug')
@@ -32,8 +32,17 @@ const getBySlug = async (slug) => {
     where: { slug, isActive: true },
     include: [
       { model: Category, as: 'category' },
-      { model: ProductImage, as: 'images' }
+      { model: ProductImage, as: 'images' },
+      { 
+        model: ProductAdditionalInfo, 
+        as: 'additionalInfo',
+        where: { isActive: true }, 
+        required: false 
+      }
     ],
+    order: [
+      [{ model: ProductAdditionalInfo, as: 'additionalInfo' }, 'sortOrder', 'ASC']
+    ]
   });
   if (!product) throw new AppError('Product not found', StatusCodes.NOT_FOUND);
   
@@ -50,8 +59,17 @@ const getById = async (id) => {
   const product = await Product.findByPk(id, {
     include: [
       { model: Category, as: 'category' },
-      { model: ProductImage, as: 'images' }
+      { model: ProductImage, as: 'images' },
+      { 
+        model: ProductAdditionalInfo, 
+        as: 'additionalInfo',
+        where: { isActive: true }, 
+        required: false 
+      }
     ],
+    order: [
+      [{ model: ProductAdditionalInfo, as: 'additionalInfo' }, 'sortOrder', 'ASC']
+    ]
   });
   if (!product) throw new AppError('Product not found', StatusCodes.NOT_FOUND);
 
