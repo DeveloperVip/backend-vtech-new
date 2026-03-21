@@ -324,4 +324,47 @@ router.post(
     }
   }
 );
+// POST /api/v1/upload/public (Công khai - dùng cho đánh giá sản phẩm)
+/**
+ * @swagger
+ * /upload/public:
+ *   post:
+ *     summary: Upload ảnh công khai (dành cho người dùng đánh giá)
+ *     description: Upload ảnh lên Cloudinary không cần token (cho phép khách hàng gửi ảnh thực tế)
+ *     tags: [Upload]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - file
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Upload thành công
+ */
+router.post(
+  '/public',
+  uploadCloud.single('file'),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ success: false, message: 'Không có file' });
+      }
+      return res.json({
+        success: true,
+        url: req.file.path,
+        public_id: req.file.filename,
+      });
+    } catch (err) {
+      return res.status(500).json({ success: false, message: 'Upload công khai thất bại' });
+    }
+  }
+);
+
 module.exports = router;

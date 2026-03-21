@@ -14,6 +14,7 @@ const ProductLike = require('./ProductLike');
 const ProductModel3D = require('./ProductModel3D');
 const ProductAttribute = require('./ProductAttribute');
 const ProductRelation = require('./ProductRelation');
+const ProductReviewLike = require('./ProductReviewLike');
 
 // Associations
 Category.hasMany(Product, { foreignKey: 'categoryId', as: 'products' });
@@ -29,6 +30,7 @@ AdminUser.hasMany(ChatRoom, { foreignKey: 'adminId', as: 'chatRooms' });
 // 🔹 Product - Image (1 - n)
 Product.hasMany(ProductImage, {
   foreignKey: 'productId',
+  as: 'images'
 });
 ProductImage.belongsTo(Product, {
   foreignKey: 'productId',
@@ -61,6 +63,15 @@ ProductReviewImage.belongsTo(ProductReview, {
   foreignKey: 'reviewId',
 });
 
+// 🔹 Review - ReviewLike (1 - n)
+ProductReview.hasMany(ProductReviewLike, {
+  foreignKey: 'reviewId',
+  as: 'likes'
+});
+ProductReviewLike.belongsTo(ProductReview, {
+  foreignKey: 'reviewId',
+});
+
 
 // 🔹 Product - Attribute (1 - n)
 Product.hasMany(ProductAttribute, {
@@ -74,6 +85,7 @@ ProductAttribute.belongsTo(Product, {
 // 🔹 Product - Additional Info (1 - n) 🔥
 Product.hasMany(ProductAdditionalInfo, {
   foreignKey: 'productId',
+  as: 'additionalInfo'
 });
 ProductAdditionalInfo.belongsTo(Product, {
   foreignKey: 'productId',
@@ -113,6 +125,7 @@ const db = {
   ProductAdditionalInfo,
   ProductLike,
   ProductAttribute,
+  ProductReviewLike,
 };
 
 module.exports = db;

@@ -1,5 +1,5 @@
 const slugify = require('slugify');
-const { Product, Category } = require('../models');
+const { Product, Category, ProductImage, ProductAdditionalInfo } = require('../models');
 const { AppError } = require('../middlewares/errorHandler');
 const { StatusCodes } = require('http-status-codes');
 const {generateUniqueSlug} = require('../utils/checkSlug')
@@ -30,18 +30,56 @@ const getAll = async ({ page = 1, limit = 12, categoryId, search, featured, acti
 const getBySlug = async (slug) => {
   const product = await Product.findOne({
     where: { slug, isActive: true },
-    include: [{ model: Category, as: 'category' }],
+    include: [
+      { model: Category, as: 'category' },
+      { model: ProductImage, as: 'images' },
+      { 
+        model: ProductAdditionalInfo, 
+        as: 'additionalInfo',
+        where: { isActive: true }, 
+        required: false 
+      }
+    ],
+    order: [
+      [{ model: ProductAdditionalInfo, as: 'additionalInfo' }, 'sortOrder', 'ASC']
+    ]
   });
   if (!product) throw new AppError('Product not found', StatusCodes.NOT_FOUND);
-  return product;
+  
+  // Map images to simple URL array
+  const plainProduct = product.toJSON();
+  if (plainProduct.images) {
+    plainProduct.images = plainProduct.images.map(img => img.url);
+  }
+  
+  return plainProduct;
 };
 
 const getById = async (id) => {
   const product = await Product.findByPk(id, {
-    include: [{ model: Category, as: 'category' }],
+    include: [
+      { model: Category, as: 'category' },
+      { model: ProductImage, as: 'images' },
+      { 
+        model: ProductAdditionalInfo, 
+        as: 'additionalInfo',
+        where: { isActive: true }, 
+        required: false 
+      }
+    ],
+    order: [
+      [{ model: ProductAdditionalInfo, as: 'additionalInfo' }, 'sortOrder', 'ASC']
+    ]
   });
   if (!product) throw new AppError('Product not found', StatusCodes.NOT_FOUND);
-  return product;
+
+  // Map images to simple URL array
+  const plainProduct = product.toJSON();
+  if (plainProduct.images) {
+    plainProduct.images = plainProduct.images.map(img => img.url);
+  }
+
+  return plainProduct;
 };
 
 const create = async (data) => {

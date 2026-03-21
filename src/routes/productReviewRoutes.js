@@ -181,4 +181,22 @@ router.put('/product-reviews/:id', authMiddleware, productReviewController.updat
  */
 router.delete('/product-reviews/:id', authMiddleware, productReviewController.delete);
 
+/**
+ * @swagger
+ * /product-reviews/{id}/like:
+ *   post:
+ *     summary: Thích/Bỏ thích đánh giá
+ *     tags: [Product Reviews]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Thành công
+ */
+router.post('/product-reviews/:id/like', productReviewController.toggleLike);
+
 module.exports = router;
