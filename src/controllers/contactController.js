@@ -23,6 +23,7 @@ const submitContact = async (req, res, next) => {
         fullName: contact.fullName,
         email: contact.email,
         subject: contact.subject,
+        phone: contact.phone,
         createdAt: contact.createdAt,
       },
     });

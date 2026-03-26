@@ -28,6 +28,7 @@ const getAllContacts = async ({ page = 1, limit = 10, status, search } = {}) => 
       { fullName: { [Op.like]: `%${search}%` } },
       { email: { [Op.like]: `%${search}%` } },
       { subject: { [Op.like]: `%${search}%` } },
+      { phone: { [Op.like]: `%${search}%` } },
     ];
   }
 

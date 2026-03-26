@@ -36,6 +36,9 @@ const router = Router();
  *               subject:
  *                 type: string
  *                 example: Hỏi về sản phẩm
+ *               phone: 
+ *                 type: number
+ *                 example: Số điện thoại liên hệ
  *               message:
  *                 type: string
  *                 example: Tôi muốn hỏi thêm thông tin...
