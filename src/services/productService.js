@@ -2,11 +2,33 @@ const slugify = require('slugify');
 const { Product, Category, ProductImage, ProductAdditionalInfo } = require('../models');
 const { AppError } = require('../middlewares/errorHandler');
 const { StatusCodes } = require('http-status-codes');
-const {generateUniqueSlug} = require('../utils/checkSlug')
+const { generateUniqueSlug } = require('../utils/checkSlug')
 const { Op } = require('sequelize');
 
 const makeSlug = (name) =>
   slugify(name, { lower: true, strict: true, locale: 'vi' });
+
+const getInstanceById = async (id) => {
+  const product = await Product.findByPk(id, {
+    include: [
+      { model: Category, as: 'category' },
+      { model: ProductImage, as: 'images' },
+      {
+        model: ProductAdditionalInfo,
+        as: 'additionalInfo',
+        where: { isActive: true },
+        required: false
+      }
+    ],
+    order: [
+      [{ model: ProductAdditionalInfo, as: 'additionalInfo' }, 'sortOrder', 'ASC']
+    ]
+  });
+
+  if (!product) throw new AppError('Product not found', StatusCodes.NOT_FOUND);
+
+  return product; // ⚠️ giữ nguyên instance
+};
 
 const getAll = async ({ page = 1, limit = 12, categoryId, search, featured, active = true } = {}) => {
   const where = {};
@@ -33,11 +55,11 @@ const getBySlug = async (slug) => {
     include: [
       { model: Category, as: 'category' },
       { model: ProductImage, as: 'images' },
-      { 
-        model: ProductAdditionalInfo, 
+      {
+        model: ProductAdditionalInfo,
         as: 'additionalInfo',
-        where: { isActive: true }, 
-        required: false 
+        where: { isActive: true },
+        required: false
       }
     ],
     order: [
@@ -45,13 +67,13 @@ const getBySlug = async (slug) => {
     ]
   });
   if (!product) throw new AppError('Product not found', StatusCodes.NOT_FOUND);
-  
+
   // Map images to simple URL array
   const plainProduct = product.toJSON();
   if (plainProduct.images) {
     plainProduct.images = plainProduct.images.map(img => img.url);
   }
-  
+
   return plainProduct;
 };
 
@@ -60,11 +82,11 @@ const getById = async (id) => {
     include: [
       { model: Category, as: 'category' },
       { model: ProductImage, as: 'images' },
-      { 
-        model: ProductAdditionalInfo, 
+      {
+        model: ProductAdditionalInfo,
         as: 'additionalInfo',
-        where: { isActive: true }, 
-        required: false 
+        where: { isActive: true },
+        required: false
       }
     ],
     order: [
@@ -88,7 +110,7 @@ const create = async (data) => {
 };
 
 const update = async (id, data) => {
-  const product = await getById(id);
+  const product = await getInstanceById(id);
   if (data.name && !data.slug) data.slug = makeSlug(data.name);
   await product.update(data);
   return product;

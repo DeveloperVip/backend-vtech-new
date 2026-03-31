@@ -1,6 +1,41 @@
 const { ProductReview, ProductReviewImage } = require('../models');
 
 class ProductReviewService {
+  async getAll(query) {
+    const { page = 1, limit = 10, rating, productId, username, email } = query;
+    const offset = (page - 1) * limit;
+
+    const where = {};
+    if (rating) where.rating = rating;
+    if (productId) where.productId = productId;
+    if (username) where.username = username;
+    if (email) where.email = email;
+
+    const { rows, count } = await ProductReview.findAndCountAll({
+      where,
+      include: [
+        {
+          model: ProductReviewImage,
+          attributes: ['id', 'url', 'width', 'height'],
+        },
+        // We handle user-specific liked status in frontend or a separate call
+        // but let's include the total likes if needed. 
+        // ProductReview model already has likeCount if we use counter cache.
+      ],
+      limit: parseInt(limit, 10),
+      offset: parseInt(offset, 10),
+      order: [['createdAt', 'DESC']],
+      distinct: true, // required when include hasMany to get correct count
+    });
+
+    return {
+      data: rows,
+      total: count,
+      page: parseInt(page, 10),
+      totalPages: Math.ceil(count / limit),
+    };
+  }
+
   async getAllByProductId(productId, query) {
     const { page = 1, limit = 10, rating } = query;
     const offset = (page - 1) * limit;
@@ -35,7 +70,7 @@ class ProductReviewService {
 
   async create(data) {
     const { images, ...reviewData } = data;
-    
+
     if (images && images.length > 0) {
       reviewData.hasImages = true;
     }
@@ -64,32 +99,32 @@ class ProductReviewService {
     const review = await ProductReview.findByPk(id);
     if (!review) throw new Error('Không tìm thấy đánh giá');
     await review.update(data);
-    
+
     // 🔥 Cập nhật lại rating nếu có thay đổi số sao
     if (data.rating !== undefined) {
       await this._updateProductRating(review.productId);
     }
-    
+
     return review;
   }
 
   async delete(id) {
     const review = await ProductReview.findByPk(id);
     if (!review) throw new Error('Không tìm thấy đánh giá');
-    
+
     const productId = review.productId;
     await ProductReviewImage.destroy({ where: { reviewId: id } });
     await review.destroy();
 
     // 🔥 Cập nhật lại rating sau khi xóa
     await this._updateProductRating(productId);
-    
+
     return true;
   }
 
   async toggleLike(reviewId, userId, ipAddress) {
     const { ProductReviewLike } = require('../models');
-    
+
     // Find if already liked
     let where = { reviewId };
     if (userId) {
@@ -117,7 +152,7 @@ class ProductReviewService {
   // Helper cập nhật điểm trung bình
   async _updateProductRating(productId) {
     const { Product } = require('../models');
-    
+
     const result = await ProductReview.findAll({
       where: { productId },
       attributes: [

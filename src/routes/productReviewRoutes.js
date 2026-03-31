@@ -6,6 +6,40 @@ const router = Router();
 
 /**
  * @swagger
+ * /product-reviews:
+ *   get:
+ *     summary: Lấy danh sách đánh giá
+ *     tags: [Product Reviews]
+ *     parameters:
+ *       - in: query
+ *         name: rating
+ *         schema:
+ *           type: integer
+ *           description: Lọc theo số sao
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: username
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: email
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Thành công
+ */
+router.get('/product-reviews', productReviewController.getAll);
+
+/**
+ * @swagger
  * /products/{productId}/reviews:
  *   get:
  *     summary: Lấy danh sách đánh giá của sản phẩm

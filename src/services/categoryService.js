@@ -7,8 +7,8 @@ const makeSlug = (name) => slugify(name, { lower: true, strict: true, locale: 'v
 
 const getAll = async () =>
   Category.findAll({
-    where: { isActive: true, parentId: null },
-    include: [{ model: Category, as: 'children', where: { isActive: true }, required: false }],
+    where: { parentId: null },
+    include: [{ model: Category, as: 'children', required: false }],
     order: [['sortOrder', 'ASC'], ['name', 'ASC']],
   });
 

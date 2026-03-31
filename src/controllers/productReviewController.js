@@ -1,6 +1,15 @@
 const productReviewService = require('../services/productReviewService');
 
 class ProductReviewController {
+  getAll = async (req, res) => {
+    try {
+      const result = await productReviewService.getAll(req.query);
+      res.status(200).json({ success: true, data: result.data, pagination: { total: result.total, page: result.page, totalPages: result.totalPages } });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  };
+
   getAllByProductId = async (req, res) => {
     try {
       const { productId } = req.params;
@@ -47,7 +56,7 @@ class ProductReviewController {
       const { id } = req.params;
       const userId = req.user?.id;
       const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-      
+
       const result = await productReviewService.toggleLike(id, userId, ipAddress);
       res.status(200).json({ success: true, data: result });
     } catch (error) {
