@@ -1,5 +1,5 @@
 const slugify = require('slugify');
-const { Product, Category, ProductImage, ProductAdditionalInfo } = require('../models');
+const { Product, Category, ProductImage, ProductAdditionalInfo, ProductModel3D } = require('../models');
 const { AppError } = require('../middlewares/errorHandler');
 const { StatusCodes } = require('http-status-codes');
 const { generateUniqueSlug } = require('../utils/checkSlug')
@@ -55,6 +55,7 @@ const getBySlug = async (slug) => {
     include: [
       { model: Category, as: 'category' },
       { model: ProductImage, as: 'images' },
+      { model: ProductModel3D, as: 'ProductModel3D' },
       {
         model: ProductAdditionalInfo,
         as: 'additionalInfo',
@@ -82,6 +83,7 @@ const getById = async (id) => {
     include: [
       { model: Category, as: 'category' },
       { model: ProductImage, as: 'images' },
+      { model: ProductModel3D, as: 'ProductModel3D' },
       {
         model: ProductAdditionalInfo,
         as: 'additionalInfo',
@@ -106,13 +108,34 @@ const getById = async (id) => {
 
 const create = async (data) => {
   if (!data.slug) data.slug = await generateUniqueSlug(data.name);
-  return Product.create(data);
+  const product = await Product.create(data);
+
+  // 🔥 Nếu có model3DId (từ bước preview), thực hiện liên kết
+  if (data.model3DId) {
+    await ProductModel3D.update(
+      { productId: product.id },
+      { where: { id: data.model3DId } }
+    );
+  }
+
+  return product;
 };
 
 const update = async (id, data) => {
   const product = await getInstanceById(id);
   if (data.name && !data.slug) data.slug = makeSlug(data.name);
   await product.update(data);
+
+  // 🔥 Nếu có model3DId mới, thực hiện liên kết (ghi đè model cũ nếu có)
+  if (data.model3DId) {
+    // Xóa liên kết cũ (nếu có logic ghi đè hoàn toàn, tùy yêu cầu)
+    // Ở đây ta chỉ đơn giản là gán model mới cho sản phẩm này
+    await ProductModel3D.update(
+      { productId: product.id },
+      { where: { id: data.model3DId } }
+    );
+  }
+
   return product;
 };
 

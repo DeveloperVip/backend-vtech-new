@@ -5,6 +5,7 @@ const fs = require('fs');
 const sharp = require('sharp')
 const { cloudStorage } = require('../utils/storageCloudinary')
 const { authMiddleware } = require('../middlewares/authMiddleware');
+const cloudinary = require('cloudinary').v2;
 
 const MAX_HEIGHT = parseInt(process.env.MAX_HEIGHT) || 1080;
 const MAX_WIDTH = parseInt(process.env.MAX_WIDTH) || 1920;
@@ -12,7 +13,7 @@ const MAX_WIDTH = parseInt(process.env.MAX_WIDTH) || 1920;
 const router = Router();
 
 // Đảm bảo thư mục uploads tồn tại
-const uploadDir = path.join(__dirname, '../../uploads');
+const uploadDir = path.join(__dirname, '../../uploads/product-images');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 const storage = multer.diskStorage({
@@ -28,12 +29,22 @@ const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
   fileFilter: (_req, file, cb) => {
-    const allowed = /jpeg|jpg|png|webp|gif|svg/;
-    const ok = allowed.test(path.extname(file.originalname).toLowerCase())
-      && allowed.test(file.mimetype);
-    if (ok) cb(null, true);
-    else cb(new Error('Chỉ chấp nhận file ảnh (jpg, png, webp, gif, svg)'));
-  },
+    const ext = path.extname(file.originalname).toLowerCase();
+
+    const allowedExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg', '.glb', '.gltf'];
+
+    const isValidExt = allowedExt.includes(ext);
+    const isValidMime = file.mimetype.startsWith('image/') ||
+      file.mimetype.startsWith('model/') ||
+      file.mimetype === 'application/octet-stream';;
+
+    if (isValidExt && isValidMime) {
+      cb(null, true);
+    } else {
+      console.log('❌ MIME:', file.mimetype);
+      cb(new Error('Chỉ chấp nhận file ảnh hoặc 3D (jpg, png, glb, gltf)'));
+    }
+  }
 });
 //upload cloud
 const uploadCloud = multer({
@@ -106,30 +117,54 @@ const uploadCloud = multer({
  *         description: Lỗi server
  */
 router.post('/', authMiddleware, upload.single('file'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: 'Không có file' });
+  }
+
+  const filePath = path.join(uploadDir, req.file.filename);
+  const ext = path.extname(req.file.filename).toLowerCase();
+  const isImage = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'].includes(ext);
+
+  let width = null;
+  let height = null;
+
+  const cleanupFile = () => {
+    if (fs.existsSync(filePath)) {
+      try {
+        fs.unlinkSync(filePath);
+      } catch (unlinkErr) {
+        // Log nhẹ, không crash app
+        console.warn('Cannot delete file:', unlinkErr);
+      }
+    }
+  };
+
   try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: 'Không có file' });
+    if (isImage) {
+      try {
+        const fileBuffer = await fs.promises.readFile(filePath);
+        const metadata = await sharp(fileBuffer).metadata();
+        console.log("meta:", metadata)
+        width = metadata.width;
+        height = metadata.height;
+
+        if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+          cleanupFile();
+          return res.status(400).json({
+            success: false,
+            message: `Ảnh vượt quá kích thước (${MAX_WIDTH}x${MAX_HEIGHT})`,
+          });
+        }
+      } catch (e) {
+        cleanupFile();
+        return res.status(400).json({
+          success: false,
+          message: 'File ảnh không hợp lệ',
+        });
+      }
     }
 
-    const filePath = path.join(uploadDir, req.file.filename);
-
-    // 🔥 Đọc kích thước ảnh
-    const metadata = await sharp(filePath).metadata();
-
-    const { width, height } = metadata;
-
-    // 🔥 Validate kích thước
-    if (width > MAX_WIDTH || height > MAX_HEIGHT) {
-      // ❌ Xóa file nếu không hợp lệ
-      fs.unlinkSync(filePath);
-
-      return res.status(400).json({
-        success: false,
-        message: `Ảnh vượt quá kích thước cho phép (${MAX_WIDTH}x${MAX_HEIGHT})`,
-      });
-    }
-
-    const url = `${process.env.API_URL || 'http://localhost:5000'}/uploads/${req.file.filename}`;
+    const url = `${process.env.API_URL || 'http://localhost:5000'}/uploads/product-images/${req.file.filename}`;
 
     return res.json({
       success: true,
@@ -139,10 +174,15 @@ router.post('/', authMiddleware, upload.single('file'), async (req, res) => {
       height,
     });
   } catch (err) {
-    // ❌ Nếu lỗi → xóa file
     if (req.file) {
       const filePath = path.join(uploadDir, req.file.filename);
-      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      if (fs.existsSync(filePath)) {
+        try {
+          fs.unlinkSync(filePath);
+        } catch (unlinkErr) {
+          console.warn('Cannot delete file in catch:', unlinkErr);
+        }
+      }
     }
 
     return res.status(500).json({
@@ -172,9 +212,33 @@ router.post('/', authMiddleware, upload.single('file'), async (req, res) => {
  *       200:
  *         description: Xóa thành công
  */
-router.delete('/:filename', authMiddleware, (req, res) => {
+router.delete('/:filename', authMiddleware, async (req, res) => {
   const filePath = path.join(uploadDir, req.params.filename);
-  if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+  if (fs.existsSync(filePath)) {
+    try { fs.unlinkSync(filePath); } catch (e) { console.warn(e); }
+  }
+
+  try {
+    const { ProductModel3D } = require('../models');
+    const { Op } = require('sequelize');
+    const models = await ProductModel3D.findAll({
+      where: { poster: { [Op.like]: `%${req.params.filename}` } }
+    });
+    
+    for (const model of models) {
+      if (model.modelUrl) {
+         const glbFilename = model.modelUrl.split('/').pop().split('?')[0];
+         const glbFilePath = path.join(__dirname, '../../uploads/product-models', glbFilename);
+         if (fs.existsSync(glbFilePath)) {
+             try { fs.unlinkSync(glbFilePath); console.log(`[Upload] Deleted GLB: ${glbFilename}`); } catch (e) { console.warn(e); }
+         }
+      }
+      await model.destroy();
+    }
+  } catch (err) {
+    console.error('[Upload] Error cleaning up associated GLB models:', err);
+  }
+
   return res.json({ success: true });
 });
 

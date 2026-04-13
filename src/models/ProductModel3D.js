@@ -6,7 +6,10 @@ const ProductModel3D = sequelize.define(
     {
         id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
 
-        productId: DataTypes.INTEGER.UNSIGNED,
+        productId: {
+            type: DataTypes.INTEGER.UNSIGNED,
+            allowNull: true
+        },
 
         modelUrl: DataTypes.STRING(500),
         textureUrl: DataTypes.STRING(500),
@@ -27,6 +30,25 @@ const ProductModel3D = sequelize.define(
         },
 
         fileSize: DataTypes.INTEGER,
+
+        // Trạng thái chuyển đổi từ ảnh sang 3D
+        conversionStatus: {
+            type: DataTypes.ENUM('none', 'pending', 'processing', 'succeeded', 'failed'),
+            defaultValue: 'none'
+        },
+        conversionTaskId: {
+            type: DataTypes.TEXT,
+            allowNull: true
+        },
+        errorMessage: {
+            type: DataTypes.TEXT,
+            allowNull: true
+        },
+        sourceViews: {
+            type: DataTypes.JSON,
+            allowNull: true,
+            comment: 'Lưu 4 ảnh hướng (mặt trước, sau, trái, phải) dùng để tạo 3D'
+        }
     },
     {
         tableName: 'product_models',

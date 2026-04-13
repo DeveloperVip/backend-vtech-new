@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const productController = require('../controllers/productController');
+const product3DController = require('../controllers/product3DController');
 const { authMiddleware } = require('../middlewares/authMiddleware');
 
 const router = Router();
@@ -225,5 +226,129 @@ router.put('/:id', authMiddleware, productController.update);
  *         description: Xóa thành công
  */
 router.delete('/:id', authMiddleware, productController.remove);
+
+
+/**
+ * @swagger
+ * /products/{id}/generate-3d:
+ *   post:
+ *     summary: Tạo mô hình 3D (.glb) từ ảnh sản phẩm
+ *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               imageUrl:
+ *                 type: string
+ *                 description: URL ảnh cụ thể để tạo 3D (nếu để trống sẽ dùng ảnh đầu tiên của sản phẩm)
+ *     responses:
+ *       202:
+ *         description: Đã nhận yêu cầu, đang xử lý ngầm
+ */
+router.post('/:id/generate-3d', authMiddleware, product3DController.generate3D);
+
+/**
+ * @swagger
+ * /products/3d-preview:
+ *   post:
+ *     summary: Tạo mô hình 3D preview (chưa gán sản phẩm)
+ *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [imageUrl]
+ *             properties:
+ *               imageUrl:
+ *                 type: string
+ *     responses:
+ *       202:
+ *         description: Đã nhận yêu cầu
+ */
+router.post('/3d-preview', authMiddleware, product3DController.generatePreview);
+
+/**
+ * @swagger
+ * /products/3d-status/{modelId}:
+ *   get:
+ *     summary: Kiểm tra trạng thái task tạo 3D (poll endpoint)
+ *     description: |
+ *       Gọi endpoint này định kỳ để kiểm tra tiến trình tạo 3D.
+ *       - modelId là ID của ProductModel3D record (trả về từ generate-3d hoặc 3d-preview)
+ *       - Status: pending → processing → succeeded | failed
+ *       - Khi succeeded: modelUrl chứa URL file GLB có màu
+ *     tags: [Products]
+ *     parameters:
+ *       - in: path
+ *         name: modelId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID của ProductModel3D record (không phải productId)
+ *     responses:
+ *       200:
+ *         description: Trạng thái hiện tại
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     modelId:
+ *                       type: integer
+ *                     productId:
+ *                       type: integer
+ *                       nullable: true
+ *                     status:
+ *                       type: string
+ *                       enum: [pending, processing, succeeded, failed]
+ *                     modelUrl:
+ *                       type: string
+ *                       nullable: true
+ *                       description: URL file GLB khi succeeded
+ *                     errorMessage:
+ *                       type: string
+ *                       nullable: true
+ */
+/**
+ * @swagger
+ * /products/{id}/3d-status:
+ *   get:
+ *     summary: Kiểm tra trạng thái và lấy kết quả tạo mô hình 3D
+ *     tags: [Products]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID sản phẩm hoặc ID task 3D
+ */
+router.get('/:id/3d-status', product3DController.getStatus);
+
+/**
+ * POST /api/v1/products/3d-status/save-views
+ * Lưu tạm các ảnh hướng 3D
+ */
+router.post('/3d-status/save-views', authMiddleware, product3DController.saveSourceViews);
+
+router.post('/:id/3d-retry', authMiddleware, product3DController.retryGeneration);
 
 module.exports = router;
