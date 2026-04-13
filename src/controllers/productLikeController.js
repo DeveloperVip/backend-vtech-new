@@ -23,7 +23,19 @@ class ProductLikeController {
     } catch (error) {
       res.status(500).json({ success: false, message: error.message });
     }
-  }
+  };
+
+  getLikedProducts = async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const { page = 1, limit = 10 } = req.query;
+      
+      const result = await productLikeService.getLikedProducts(userId, { page, limit });
+      res.status(200).json({ success: true, ...result });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 module.exports = new ProductLikeController();

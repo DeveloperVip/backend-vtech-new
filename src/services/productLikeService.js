@@ -29,6 +29,34 @@ class ProductLikeService {
     });
     return !!existingLike;
   }
+
+  async getLikedProducts(userId, { page, limit }) {
+    const offset = (page - 1) * limit;
+    
+    const { count, rows } = await ProductLike.findAndCountAll({
+      where: { userId },
+      include: [
+        {
+          model: Product,
+          attributes: ['id', 'name', 'price', 'slug', 'thumbnail'],
+          include: [
+            { model: require('../models').Category, as: 'category', attributes: ['name', 'slug'] },
+            { model: require('../models').ProductImage, as: 'images', limit: 1 }
+          ]
+        }
+      ],
+      offset,
+      limit: parseInt(limit),
+      order: [['createdAt', 'DESC']]
+    });
+
+    return {
+      total: count,
+      totalPages: Math.ceil(count / limit),
+      currentPage: parseInt(page),
+      products: rows.map(row => row.Product)
+    };
+  }
 }
 
 module.exports = new ProductLikeService();

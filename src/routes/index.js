@@ -6,6 +6,8 @@ const categoryRoutes = require('./categoryRoutes');
 const postRoutes = require('./postRoutes');
 const uploadRoutes = require('./uploadRoutes');
 const chatRoutes = require('./chatRoutes');
+const userRoutes = require('./userRoutes');
+const adminRoutes = require('./adminRoutes');
 
 // Product sub-resources
 const productImageRoutes = require('./productImageRoutes');
@@ -25,6 +27,8 @@ router.use('/categories', categoryRoutes);
 router.use('/posts', postRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/chat', chatRoutes);
+router.use('/users', userRoutes);
+router.use('/admin', adminRoutes);
 
 // Bổ sung các routes con của Product (Mount ở root vì bên trong đã định nghĩa sẵn path chi tiết)
 router.use('/', productImageRoutes);

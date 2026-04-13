@@ -6,6 +6,17 @@ const router = Router();
 
 /**
  * @swagger
+ * /liked:
+ *   get:
+ *     summary: Lấy danh sách sản phẩm đã thích của user hiện tại
+ *     tags: [Product Likes]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.get('/liked', authMiddleware, productLikeController.getLikedProducts);
+
+/**
+ * @swagger
  * /products/{productId}/like:
  *   post:
  *     summary: Thích hoặc Bỏ thích sản phẩm (Toggle Like)

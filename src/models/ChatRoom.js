@@ -14,6 +14,11 @@ const ChatRoom = sequelize.define(
       allowNull: false,
       comment: 'Guest user identifier (email or unique ID)',
     },
+    memberId: {
+      type: DataTypes.INTEGER.UNSIGNED,
+      allowNull: true,
+      comment: 'User ID nếu là thành viên đã đăng nhập',
+    },
     userName: {
       type: DataTypes.STRING(100),
       allowNull: false,
@@ -35,6 +40,15 @@ const ChatRoom = sequelize.define(
     lastMessageAt: {
       type: DataTypes.DATE,
       allowNull: true,
+    },
+    userType: {
+      type: DataTypes.ENUM('guest', 'member'),
+      defaultValue: 'guest',
+    },
+    priority: {
+      type: DataTypes.ENUM('low', 'normal', 'high', 'urgent'),
+      defaultValue: 'normal',
+      comment: 'low: chưa cần gấp, normal: bình thường, high: ưu tiên, urgent: gấp',
     },
   },
   {

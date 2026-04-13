@@ -86,4 +86,10 @@ router.get('/rooms/:roomId/messages', authMiddleware, chatController.getMessages
  */
 router.get('/unread-count', authMiddleware, chatController.getUnreadCount);
 
+/**
+ * PATCH /api/v1/chat/rooms/:id/meta
+ * Cập nhật thuộc tính phòng chat (ưu tiên, trạng thái...)
+ */
+router.patch('/rooms/:id/meta', authMiddleware, chatController.updateRoomMeta);
+
 module.exports = router;

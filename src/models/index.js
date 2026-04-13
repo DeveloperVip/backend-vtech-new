@@ -15,6 +15,7 @@ const ProductModel3D = require('./ProductModel3D');
 const ProductAttribute = require('./ProductAttribute');
 const ProductRelation = require('./ProductRelation');
 const ProductReviewLike = require('./ProductReviewLike');
+const User = require('./User');
 
 // Associations
 Category.hasMany(Product, { foreignKey: 'categoryId', as: 'products' });
@@ -26,6 +27,10 @@ ChatMessage.belongsTo(ChatRoom, { foreignKey: 'roomId', as: 'room' });
 
 ChatRoom.belongsTo(AdminUser, { foreignKey: 'adminId', as: 'admin' });
 AdminUser.hasMany(ChatRoom, { foreignKey: 'adminId', as: 'chatRooms' });
+
+// Liên kết ChatRoom với cả User (thành viên) hoặc mã Guest
+ChatRoom.belongsTo(User, { foreignKey: 'memberId', as: 'member' });
+User.hasMany(ChatRoom, { foreignKey: 'memberId', as: 'chatRooms' });
 
 // 🔹 Product - Image (1 - n)
 Product.hasMany(ProductImage, {
@@ -109,6 +114,10 @@ ProductLike.belongsTo(Product, {
   foreignKey: 'productId',
 });
 
+// Liên kết ProductLike với User
+ProductLike.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+User.hasMany(ProductLike, { foreignKey: 'userId', as: 'likes' });
+
 const db = {
   sequelize,
   Contact,
@@ -126,6 +135,7 @@ const db = {
   ProductLike,
   ProductAttribute,
   ProductReviewLike,
+  User,
 };
 
 module.exports = db;

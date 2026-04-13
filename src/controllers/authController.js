@@ -13,7 +13,15 @@ const login = async (req, res, next) => {
 };
 
 const me = (req, res) => {
-  res.json({ success: true, data: req.admin });
+  if (req.admin) {
+    const { password, ...adminData } = req.admin.toJSON ? req.admin.toJSON() : req.admin;
+    return res.json({ success: true, data: adminData });
+  }
+  if (req.user) {
+    const { password, ...userData } = req.user.toJSON ? req.user.toJSON() : req.user;
+    return res.json({ success: true, data: userData });
+  }
+  res.status(StatusCodes.UNAUTHORIZED).json({ success: false, message: 'Not authenticated' });
 };
 
 const logout = (req, res) => {

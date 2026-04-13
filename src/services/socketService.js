@@ -30,7 +30,15 @@ class SocketService {
               userId,
               userName,
               userEmail,
+              userType: data.userType || 'guest',
               status: 'waiting',
+              priority: 'normal'
+            });
+          } else {
+            await room.update({ 
+               userName, 
+               userEmail, 
+               userType: data.userType || room.userType 
             });
           }
 
