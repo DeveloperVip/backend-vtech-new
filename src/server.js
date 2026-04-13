@@ -7,6 +7,7 @@ const { sequelize } = require('./models');
 const logger = require('./config/logger');
 const authService = require('./services/authService');
 const socketService = require('./services/socketService');
+const { runSeeder } = require('./data/seeder');
 const { start3DSyncJob, startOrphanCleanupJob } = require('./utils/backgroundJobs');
 
 const PORT = parseInt(process.env.PORT, 10) || 5000;
@@ -22,15 +23,18 @@ const startServer = async () => {
         await sequelize.sync();
         logger.info('✅ Database models synchronized.');
 
-        // Tạo tài khoản admin mặc định nếu chưa có
+        // 1. Chạy Auto-Seeder (Chỉ chạy khi DB trống hoặc SEED_DB=true)
+        await runSeeder(process.env.SEED_DB === 'true');
+
+        // 2. Tạo tài khoản admin mặc định nếu chưa có
         try {
           await authService.createAdmin({
             name: 'Super Admin',
-            email: 'admin@vitechs.com',
-            password: 'Admin@123456',
+            email: process.env.TK_ADMIN,
+            password: process.env.MK_ADMIN,
             role: 'superadmin',
           });
-          logger.info('✅ Default admin created: admin@vitechs.com / Admin@123456');
+          // logger.info('✅ Default admin created: admin@vitechs.com / Admin@123456');
         } catch {
           // Đã tồn tại - bỏ qua
         }
@@ -63,7 +67,7 @@ const startServer = async () => {
       logger.info(`🚀 Server running in ${NODE_ENV} mode on port ${PORT}`);
       logger.info(`📡 API: http://localhost:${PORT}${process.env.API_PREFIX || '/api/v1'}`);
       logger.info(`💬 WebSocket: ws://localhost:${PORT}`);
-      
+
       // Khởi động các job đồng bộ 3D và dọn dẹp ngầm
       start3DSyncJob();
       startOrphanCleanupJob();
