@@ -18,7 +18,14 @@ app.get('/api/v1/health', (req, res) => {
 });
 
 const startServer = async () => {
+  logger.info(`Starting server in ${NODE_ENV} mode...`);
+  console.log(`[Startup] Node version: ${process.version}`);
+  console.log(`[Startup] Current working directory: ${process.cwd()}`);
+
   try {
+    logger.info('Attempting to connect to database...');
+    console.log(`[DB] Connecting to host: ${process.env.DB_HOST}, Port: ${process.env.DB_PORT}, DB: ${process.env.DB_NAME}`);
+    
     await sequelize.authenticate();
     logger.info('✅ Database connection established successfully.');
 
@@ -27,6 +34,7 @@ const startServer = async () => {
 
     if (SHOULD_SYNC) {
       try {
+        logger.info('Synchronizing database models...');
         await sequelize.sync();
         logger.info('✅ Database models synchronized.');
 
@@ -47,8 +55,8 @@ const startServer = async () => {
         }
       } catch (error) {
         logger.error('❌ Database Initialization Error:', error);
+        console.error('❌ Database Initialization Error:', error);
         if (process.env.NODE_ENV === 'development') {
-          console.error('❌ FULL ERROR:', error);
           throw error;
         }
       }
@@ -72,6 +80,7 @@ const startServer = async () => {
 
     server.listen(PORT, () => {
       logger.info(`🚀 Server running in ${NODE_ENV} mode on port ${PORT}`);
+      console.log(`🚀 Server running on port ${PORT}`);
       logger.info(`📡 API: http://localhost:${PORT}${process.env.API_PREFIX || '/api/v1'}`);
       logger.info(`💬 WebSocket: ws://localhost:${PORT}`);
 
@@ -81,9 +90,22 @@ const startServer = async () => {
     });
   } catch (error) {
     logger.error('❌ Unable to start server:', error);
+    console.error('❌ FATAL ERROR DURING STARTUP:', error);
     process.exit(1);
   }
 };
+
+// Global error handlers
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  logger.error('Unhandled Rejection:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  logger.error('Uncaught Exception:', error);
+  process.exit(1);
+});
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
