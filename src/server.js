@@ -25,8 +25,13 @@ const startServer = async () => {
   try {
     logger.info('Attempting to connect to database...');
     console.log(`[DB] Connecting to host: ${process.env.DB_HOST}, Port: ${process.env.DB_PORT}, DB: ${process.env.DB_NAME}`);
-    
-    await sequelize.authenticate();
+
+    try {
+      await sequelize.authenticate();
+      console.log("DB connected");
+    } catch (err) {
+      console.error("DB ERROR:", err);
+    }
     logger.info('✅ Database connection established successfully.');
 
     // Kiểm tra xem có cần đồng bộ database không (Mặc định ở dev hoặc khi DB_SYNC=true)
