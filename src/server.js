@@ -13,6 +13,10 @@ const { start3DSyncJob, startOrphanCleanupJob } = require('./utils/backgroundJob
 const PORT = parseInt(process.env.PORT, 10) || 5000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
+app.get('/api/v1/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 const startServer = async () => {
   try {
     await sequelize.authenticate();
