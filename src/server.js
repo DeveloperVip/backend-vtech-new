@@ -18,15 +18,19 @@ const startServer = async () => {
     await sequelize.authenticate();
     logger.info('✅ Database connection established successfully.');
 
-    if (NODE_ENV === 'development') {
+    // Kiểm tra xem có cần đồng bộ database không (Mặc định ở dev hoặc khi DB_SYNC=true)
+    const SHOULD_SYNC = process.env.NODE_ENV === 'development' || process.env.DB_SYNC === 'true';
+
+    if (SHOULD_SYNC) {
       try {
         await sequelize.sync();
         logger.info('✅ Database models synchronized.');
 
-        // 1. Chạy Auto-Seeder (Chỉ chạy khi DB trống hoặc SEED_DB=true)
-        await runSeeder(process.env.SEED_DB === 'true');
+        // Chạy Auto-Seeder (Nếu DB_SYNC=true và SEED_DB=true hoặc khi ở dev và DB trống)
+        const SHOULD_SEED = process.env.SEED_DB === 'true';
+        await runSeeder(SHOULD_SEED);
 
-        // 2. Tạo tài khoản admin mặc định nếu chưa có
+        // Tạo tài khoản admin mặc định nếu chưa có
         try {
           await authService.createAdmin({
             name: 'Super Admin',
@@ -34,16 +38,15 @@ const startServer = async () => {
             password: process.env.MK_ADMIN,
             role: 'superadmin',
           });
-          // logger.info('✅ Default admin created: admin@vitechs.com / Admin@123456');
         } catch {
           // Đã tồn tại - bỏ qua
         }
-      }
-      catch (error) {
-        console.error('❌ FULL ERROR:', error);
-        console.error('❌ SQL MESSAGE:', error?.original?.sqlMessage);
-        console.error('❌ SQL:', error?.sql);
-        throw error; // để nodemon biết mà crash
+      } catch (error) {
+        logger.error('❌ Database Initialization Error:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ FULL ERROR:', error);
+          throw error;
+        }
       }
     }
 

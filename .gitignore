@@ -1,5 +1,9 @@
 node_modules/
+# ── Environment (QUAN TRỌNG – không commit) ───────────────────────────────────
 .env
+.env.production.local
+.env.production
+
 dist/
 logs/
 *.log
