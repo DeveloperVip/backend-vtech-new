@@ -8,7 +8,12 @@ module.exports = {
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT, 10) || 3306,
     dialect: 'mysql',
+    charset: 'utf8mb4',
+    collate: 'utf8mb4_unicode_ci',
     logging: false,
+    dialectOptions: {
+      charset: 'utf8mb4',
+    },
     pool: {
       max: 10,
       min: 0,
@@ -27,7 +32,12 @@ module.exports = {
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT, 10) || 3306,
     dialect: 'mysql',
+    charset: 'utf8mb4',
+    collate: 'utf8mb4_unicode_ci',
     logging: false,
+    dialectOptions: {
+      charset: 'utf8mb4',
+    },
   },
   production: {
     username: process.env.DB_USER,
@@ -36,7 +46,12 @@ module.exports = {
     host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT, 10) || 3306,
     dialect: 'mysql',
+    charset: 'utf8mb4',
+    collate: 'utf8mb4_unicode_ci',
     logging: false,
+    dialectOptions: {
+      charset: 'utf8mb4',
+    },
     pool: {
       max: 20,
       min: 5,

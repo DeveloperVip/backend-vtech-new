@@ -19,23 +19,17 @@ app.get('/api/v1/health', (req, res) => {
 
 const startServer = async () => {
   logger.info(`Starting server in ${NODE_ENV} mode...`);
-  console.log(`[Startup] Node version: ${process.version}`);
-  console.log(`[Startup] Current working directory: ${process.cwd()}`);
+  console.log(`[Startup] ${new Date().toISOString()} - Node: ${process.version}`);
 
   try {
     logger.info('Attempting to connect to database...');
-    console.log(`[DB] Connecting to host: ${process.env.DB_HOST}, Port: ${process.env.DB_PORT}, DB: ${process.env.DB_NAME}`);
+    console.log(`[DB] Host: ${process.env.DB_HOST}, Port: ${process.env.DB_PORT}, DB: ${process.env.DB_NAME}`);
 
-    try {
-      await sequelize.authenticate();
-      console.log("DB connected");
-    } catch (err) {
-      console.error("DB ERROR:", err);
-    }
+    await sequelize.authenticate();
     logger.info('✅ Database connection established successfully.');
 
-    // Kiểm tra xem có cần đồng bộ database không (Mặc định ở dev hoặc khi DB_SYNC=true)
-    const SHOULD_SYNC = process.env.NODE_ENV === 'development' || process.env.DB_SYNC === 'true';
+    // Database synchronization & Seeding
+    const SHOULD_SYNC = process.env.DB_SYNC === 'true';
 
     if (SHOULD_SYNC) {
       try {
@@ -43,11 +37,9 @@ const startServer = async () => {
         await sequelize.sync();
         logger.info('✅ Database models synchronized.');
 
-        // Chạy Auto-Seeder (Nếu DB_SYNC=true và SEED_DB=true hoặc khi ở dev và DB trống)
         const SHOULD_SEED = process.env.SEED_DB === 'true';
         await runSeeder(SHOULD_SEED);
 
-        // Tạo tài khoản admin mặc định nếu chưa có
         try {
           await authService.createAdmin({
             name: 'Super Admin',
@@ -56,46 +48,40 @@ const startServer = async () => {
             role: 'superadmin',
           });
         } catch {
-          // Đã tồn tại - bỏ qua
+          // Already exists - skip
         }
       } catch (error) {
         logger.error('❌ Database Initialization Error:', error);
         console.error('❌ Database Initialization Error:', error);
-        if (process.env.NODE_ENV === 'development') {
-          throw error;
-        }
       }
     }
 
-    // Create HTTP server
+    // Server initialization
     const server = http.createServer(app);
 
-    // Initialize Socket.IO
     const io = new Server(server, {
       cors: {
-        origin: (process.env.CLIENT_URL || 'http://localhost:3000').split(','),
+        origin: (process.env.CLIENT_URL || '*').split(','),
         methods: ['GET', 'POST'],
         credentials: true,
       },
     });
 
-    // Initialize socket service
     socketService.initialize(io);
     logger.info('✅ Socket.IO initialized');
 
-    server.listen(PORT, () => {
-      logger.info(`🚀 Server running in ${NODE_ENV} mode on port ${PORT}`);
-      console.log(`🚀 Server running on port ${PORT}`);
-      logger.info(`📡 API: http://localhost:${PORT}${process.env.API_PREFIX || '/api/v1'}`);
-      logger.info(`💬 WebSocket: ws://localhost:${PORT}`);
+    server.listen(PORT, '0.0.0.0', () => {
+      logger.info(`🚀 Server running on port ${PORT}`);
+      console.log(`🚀 Server ready at http://localhost:${PORT}`);
 
-      // Khởi động các job đồng bộ 3D và dọn dẹp ngầm
       start3DSyncJob();
       startOrphanCleanupJob();
     });
   } catch (error) {
-    logger.error('❌ Unable to start server:', error);
-    console.error('❌ FATAL ERROR DURING STARTUP:', error);
+    logger.error('❌ FATAL ERROR DURING STARTUP:', error);
+    // Use fs.writeSync for immediate stderr output to bypass logging buffers
+    const fs = require('fs');
+    fs.writeSync(2, `❌ FATAL ERROR: ${error.stack || error.message}\n`);
     process.exit(1);
   }
 };
