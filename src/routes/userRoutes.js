@@ -21,6 +21,8 @@ router.post('/register', userAuthController.register);
  *     tags: [Users]
  */
 router.post('/login', userAuthController.login);
+router.post('/forgot-password', userAuthController.forgotPassword);
+router.post('/reset-password', userAuthController.resetPassword);
 
 /**
  * @swagger

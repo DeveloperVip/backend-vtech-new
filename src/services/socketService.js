@@ -1,6 +1,26 @@
 const { ChatRoom, ChatMessage, AdminUser } = require('../models');
 const logger = require('../config/logger');
 
+const buildStoredMessage = (message, attachment) => {
+  const text = typeof message === 'string' ? message.trim() : '';
+
+  if (!attachment?.url) {
+    return text;
+  }
+
+  return JSON.stringify({
+    type: 'chat-message',
+    text,
+    attachment: {
+      url: attachment.url,
+      name: attachment.name,
+      mimeType: attachment.mimeType,
+      size: attachment.size,
+      kind: attachment.kind === 'image' ? 'image' : 'file',
+    },
+  });
+};
+
 class SocketService {
   constructor() {
     this.io = null;
@@ -124,14 +144,19 @@ class SocketService {
       // ─── Send Message ──────────────────────────────────────────
       socket.on('message:send', async (data) => {
         try {
-          const { roomId, message, senderType, senderId, senderName } = data;
+          const { roomId, message, attachment, senderType, senderId, senderName } = data;
+          const storedMessage = buildStoredMessage(message, attachment);
+
+          if (!storedMessage) {
+            return;
+          }
 
           const chatMessage = await ChatMessage.create({
             roomId,
             senderType,
             senderId,
             senderName,
-            message,
+            message: storedMessage,
             isRead: false,
           });
 
@@ -145,7 +170,7 @@ class SocketService {
             senderType,
             senderId,
             senderName,
-            message,
+            message: storedMessage,
             createdAt: chatMessage.createdAt,
           });
 
@@ -153,7 +178,7 @@ class SocketService {
           if (senderType === 'user') {
             io.to('admin-room').emit('admin:new-message', {
               roomId,
-              message: message.substring(0, 50),
+              message: storedMessage.substring(0, 50),
             });
           }
 

@@ -8,7 +8,9 @@ const getAllRooms = async (req, res, next) => {
     const { Op } = require('sequelize');
     const where = {};
     
-    if (status) where.status = status;
+    if (status) {
+      where.status = Array.isArray(status) ? status : status;
+    }
     if (type) where.userType = type;
     if (q) {
       where[Op.or] = [

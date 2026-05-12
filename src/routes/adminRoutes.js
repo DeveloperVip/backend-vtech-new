@@ -17,5 +17,7 @@ const router = Router();
  *         description: Trả về object chứa các thông số đếm và trạng thái AI
  */
 router.get('/stats', authMiddleware, adminController.getStats);
+router.get('/users', authMiddleware, adminController.getUsers);
+router.patch('/users/:id/status', authMiddleware, adminController.toggleUserStatus);
 
 module.exports = router;

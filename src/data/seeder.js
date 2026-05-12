@@ -7,10 +7,30 @@ const {
   ProductAttribute, 
   ProductAdditionalInfo, 
   Post, 
-  User 
+  User,
+  Partner
 } = require('../models');
 const seedData = require('./seedData');
 const logger = require('../config/logger');
+
+const seedPartnersIfNeeded = async (transaction) => {
+  const partnerCount = await Partner.count({ transaction });
+
+  if (partnerCount > 0) {
+    logger.info('ℹ️  Partners already seeded. Skipping partner seeder.');
+    return;
+  }
+
+  logger.info('   Creating partners...');
+  await Partner.bulkCreate(
+    seedData.partners.map((partner, index) => ({
+      ...partner,
+      sortOrder: index,
+      isActive: true,
+    })),
+    { transaction },
+  );
+};
 
 const runSeeder = async (force = false) => {
   try {
@@ -19,6 +39,7 @@ const runSeeder = async (force = false) => {
     
     // Nếu không force và đã có dữ liệu, bỏ qua
     if (categoryCount > 0 && !force) {
+      await seedPartnersIfNeeded();
       logger.info('ℹ️  Database already has data. Skipping seeder.');
       return;
     }
@@ -36,6 +57,7 @@ const runSeeder = async (force = false) => {
         await Category.destroy({ where: {}, transaction: t });
         await Post.destroy({ where: {}, transaction: t });
         await User.destroy({ where: {}, transaction: t });
+        await Partner.destroy({ where: {}, transaction: t });
       }
 
       // 2. Seed Categories
@@ -91,6 +113,9 @@ const runSeeder = async (force = false) => {
         return { ...u, password: hashedPassword };
       }));
       await User.bulkCreate(hashedUsers, { transaction: t });
+
+      // 6. Seed Partners
+      await seedPartnersIfNeeded(t);
     });
 
     logger.info('✅ Database seeded successfully!');

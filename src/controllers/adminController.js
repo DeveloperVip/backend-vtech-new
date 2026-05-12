@@ -102,6 +102,93 @@ const getStats = async (req, res, next) => {
     }
 };
 
+/**
+ * GET /api/v1/admin/users
+ * Danh sách người dùng cho trang quản trị
+ */
+const getUsers = async (req, res, next) => {
+    try {
+        const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+        const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 100);
+        const offset = (page - 1) * limit;
+
+        const search = (req.query.search || '').trim();
+        const status = (req.query.status || 'all').trim();
+
+        const where = {};
+
+        if (search) {
+            where[Op.or] = [
+                { name: { [Op.like]: `%${search}%` } },
+                { username: { [Op.like]: `%${search}%` } },
+                { email: { [Op.like]: `%${search}%` } },
+                { phone: { [Op.like]: `%${search}%` } },
+            ];
+        }
+
+        if (status === 'active') {
+            where.isActive = true;
+        } else if (status === 'inactive') {
+            where.isActive = false;
+        }
+
+        const { count, rows } = await User.findAndCountAll({
+            where,
+            limit,
+            offset,
+            order: [['createdAt', 'DESC']],
+            attributes: { exclude: ['password'] },
+        });
+
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            data: rows,
+            pagination: {
+                page,
+                limit,
+                total: count,
+                totalPages: Math.max(Math.ceil(count / limit), 1),
+            },
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
+ * PATCH /api/v1/admin/users/:id/status
+ * Bật/tắt trạng thái người dùng
+ */
+const toggleUserStatus = async (req, res, next) => {
+    try {
+        const userId = Number(req.params.id);
+        const user = await User.findByPk(userId);
+
+        if (!user) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                success: false,
+                message: 'Không tìm thấy người dùng',
+            });
+        }
+
+        user.isActive = !user.isActive;
+        await user.save();
+
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: user.isActive ? 'Đã kích hoạt người dùng' : 'Đã vô hiệu hóa người dùng',
+            data: {
+                id: user.id,
+                isActive: user.isActive,
+            },
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
-    getStats
+    getStats,
+    getUsers,
+    toggleUserStatus,
 };

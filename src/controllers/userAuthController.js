@@ -47,6 +47,27 @@ class UserAuthController {
       next(error);
     }
   };
+
+  forgotPassword = async (req, res, next) => {
+    try {
+      await userService.forgotPassword(req.body);
+      res.status(StatusCodes.OK).json({
+        success: true,
+        message: 'Nếu tài khoản tồn tại, hệ thống đã gửi email đặt lại mật khẩu',
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  resetPassword = async (req, res, next) => {
+    try {
+      await userService.resetPassword(req.body);
+      res.status(StatusCodes.OK).json({ success: true, message: 'Đặt lại mật khẩu thành công' });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 module.exports = new UserAuthController();

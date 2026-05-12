@@ -28,4 +28,59 @@ const logout = (req, res) => {
   res.json({ success: true, message: 'Logged out successfully' });
 };
 
-module.exports = { login, me, logout };
+const updateProfile = async (req, res, next) => {
+  try {
+    if (!req.admin) {
+      return res.status(StatusCodes.FORBIDDEN).json({ success: false, message: 'Admin only' });
+    }
+
+    const admin = await authService.updateProfile(req.admin, req.body);
+    return res.json({ success: true, message: 'Cập nhật thông tin thành công', data: admin });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updatePassword = async (req, res, next) => {
+  try {
+    if (!req.admin) {
+      return res.status(StatusCodes.FORBIDDEN).json({ success: false, message: 'Admin only' });
+    }
+
+    await authService.updatePassword(req.admin, req.body);
+    return res.json({ success: true, message: 'Đổi mật khẩu thành công' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const forgotPassword = async (req, res, next) => {
+  try {
+    await authService.forgotPassword(req.body);
+    return res.json({
+      success: true,
+      message: 'Nếu tài khoản tồn tại, hệ thống đã gửi email đặt lại mật khẩu',
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const resetPassword = async (req, res, next) => {
+  try {
+    await authService.resetPassword(req.body);
+    return res.json({ success: true, message: 'Đặt lại mật khẩu thành công' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  login,
+  me,
+  logout,
+  updateProfile,
+  updatePassword,
+  forgotPassword,
+  resetPassword,
+};

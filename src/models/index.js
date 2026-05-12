@@ -16,6 +16,7 @@ const ProductAttribute = require('./ProductAttribute');
 const ProductRelation = require('./ProductRelation');
 const ProductReviewLike = require('./ProductReviewLike');
 const User = require('./User');
+const Partner = require('./Partner');
 
 // Associations
 Category.hasMany(Product, { foreignKey: 'categoryId', as: 'products' });
@@ -136,6 +137,7 @@ const db = {
   ProductAttribute,
   ProductReviewLike,
   User,
+  Partner,
 };
 
 module.exports = db;

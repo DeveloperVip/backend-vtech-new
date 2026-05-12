@@ -30,6 +30,8 @@ const router = Router();
  *         description: Thiếu email hoặc password
  */
 router.post('/login', authController.login);
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/reset-password', authController.resetPassword);
 /**
  * @swagger
  * /auth/me:
@@ -43,6 +45,8 @@ router.post('/login', authController.login);
  *         description: Thành công
  */
 router.get('/me', authMiddleware, authController.me);
+router.patch('/profile', authMiddleware, authController.updateProfile);
+router.patch('/password', authMiddleware, authController.updatePassword);
 /**
  * @swagger
  * /auth/logout:

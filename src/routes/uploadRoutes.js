@@ -46,10 +46,82 @@ const upload = multer({
     }
   }
 });
+
+const chatUploadDir = path.join(__dirname, '../../uploads/chat-files');
+if (!fs.existsSync(chatUploadDir)) fs.mkdirSync(chatUploadDir, { recursive: true });
+
+const chatUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, chatUploadDir),
+    filename: (_req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase();
+      const name = `${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`;
+      cb(null, name);
+    },
+  }),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const allowedExt = [
+      '.jpg', '.jpeg', '.png', '.webp', '.gif',
+      '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt', '.zip', '.rar',
+    ];
+    const allowedMime = [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/gif',
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'text/plain',
+      'application/zip',
+      'application/x-zip-compressed',
+      'application/vnd.rar',
+      'application/x-rar-compressed',
+    ];
+
+    if (allowedExt.includes(ext) && allowedMime.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Chỉ chấp nhận ảnh hoặc file tài liệu phổ biến, tối đa 10MB'));
+    }
+  },
+});
 //upload cloud
 const uploadCloud = multer({
   storage: cloudStorage,
   limits: { fileSize: 5 * 1024 * 1024 }, //5MB
+});
+
+router.post('/chat', chatUpload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'Không có file' });
+    }
+
+    const isImage = req.file.mimetype.startsWith('image/');
+    const url = `${process.env.API_URL || 'http://localhost:5000'}/uploads/chat-files/${req.file.filename}`;
+
+    return res.json({
+      success: true,
+      url,
+      filename: req.file.filename,
+      originalName: req.file.originalname,
+      mimeType: req.file.mimetype,
+      size: req.file.size,
+      kind: isImage ? 'image' : 'file',
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || 'Upload file chat thất bại',
+    });
+  }
 });
 
 // POST /api/v1/upload  (cần đăng nhập admin)

@@ -157,6 +157,32 @@ const seedData = {
       email: 'member@gmail.com',
       password: 'password123', // Will be hashed by seeder
     }
+  ],
+  partners: [
+    { name: 'Kistler-Đức', logoUrl: '/logo/Kistler-Đức.svg', country: 'Đức' },
+    { name: 'Atech Training – Mỹ', logoUrl: '/logo/Atech Training – Mỹ .svg', country: 'Mỹ' },
+    { name: 'ETS DIDACTIC MGBH – Đức', logoUrl: '/logo/ETS DIDACTIC MGBH – Đức.svg', country: 'Đức' },
+    { name: 'DAC WORLDWIDE – Đức', logoUrl: '/logo/DAC WORLDWIDE –Đức.svg', country: 'Đức' },
+    { name: 'Edibon – Tây Ban Nha', logoUrl: '/logo/Edibon – Tây Ban Nha .svg', country: 'Tây Ban Nha' },
+    { name: 'Famic Technologies – Canada', logoUrl: '/logo/Famic Technologies – Canada.svg', country: 'Canada' },
+    { name: 'YES01 – Hàn Quốc', logoUrl: '/logo/YES01 – Hàn Quốc .svg', country: 'Hàn Quốc' },
+    { name: 'Woodward – Mỹ', logoUrl: '/logo/Woodward – Mỹ.svg', country: 'Mỹ' },
+    { name: 'CHIEF – Mỹ', logoUrl: '/logo/CHIEF – Mỹ.svg', country: 'Mỹ' },
+    { name: 'Bosch – Đức', logoUrl: '/logo/Bosch – Đức.svg', country: 'Đức' },
+    { name: 'SIEMENS – Đức', logoUrl: '/logo/SIEMENS – Đức.svg', country: 'Đức' },
+    { name: 'Misubishi – Electric – Nhật Bản', logoUrl: '/logo/Misubishi – Electric – Nhật Bản.svg', country: 'Nhật Bản' },
+    { name: 'HIOKI E.E CORPORATION – Nhật Bản', logoUrl: '/logo/HIOKI E.E CORPORATION – Nhật Bản.svg', country: 'Nhật Bản' },
+    { name: 'AW Dynamometer – Đức', logoUrl: '/logo/AW Dynamometer – Đức .svg', country: 'Đức' },
+    { name: 'Volkswagen AG', logoUrl: '/logo/Volkswagen AG.svg' },
+    { name: 'Koeng Co.,Ltd – Hàn Quốc', logoUrl: '/logo/Koeng Co.,Ltd – Hàn Quốc.svg', country: 'Hàn Quốc' },
+    { name: 'Cardiv Co.,Ltd – Hàn Quốc', logoUrl: '/logo/Cardiv Co.,Ltd – Hàn Quốc.svg', country: 'Hàn Quốc' },
+    { name: 'VAMAG - Italy', logoUrl: '/logo/VAMAG -  Italy.svg', country: 'Italy' },
+    { name: 'Ronin tools – Hà Lan', logoUrl: '/logo/Ronin tools – Hà Lan.svg', country: 'Hà Lan' },
+    { name: 'FI.TIM – Italy', logoUrl: '/logo/FI.TIM – Italy.svg', country: 'Italy' },
+    { name: 'Teco Automotive Quipment – Italy', logoUrl: '/logo/Teco Automotive Quipment – Italy.svg', country: 'Italy' },
+    { name: 'FAM SRL – Italy', logoUrl: '/logo/FAM SRL – Italy.svg', country: 'Italy' },
+    { name: 'MAHLE Aftermarket - Italy', logoUrl: '/logo/MAHLE Aftermarket - Italy.svg', country: 'Italy' },
+    { name: 'Mitutoyo – Nhật Bản', logoUrl: '/logo/Mitutoyo – Nhật Bản.svg', country: 'Nhật Bản' },
   ]
 };
 
